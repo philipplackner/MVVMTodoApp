@@ -47,9 +47,9 @@ fun AddEditTodoScreen(
                 )
             }
         }
-    ) {
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
         ) {
             TextField(
                 value = viewModel.title,

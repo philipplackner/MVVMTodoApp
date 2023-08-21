@@ -12,11 +12,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.plcoding.mvvmtodoapp.util.UiEvent
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @Composable
 fun TodoListScreen(
@@ -25,18 +27,24 @@ fun TodoListScreen(
 ) {
     val todos = viewModel.todos.collectAsState(initial = emptyList())
     val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
-            when(event) {
+            when (event) {
+
                 is UiEvent.ShowSnackbar -> {
-                    val result = scaffoldState.snackbarHostState.showSnackbar(
-                        message = event.message,
-                        actionLabel = event.action
-                    )
-                    if(result == SnackbarResult.ActionPerformed) {
-                        viewModel.onEvent(TodoListEvent.OnUndoDeleteClick)
+                    scope.launch {
+                        val result = scaffoldState.snackbarHostState.showSnackbar(
+                            message = event.message,
+                            actionLabel = event.action
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.onEvent(TodoListEvent.OnUndoDeleteClick)
+                        }
                     }
                 }
+
                 is UiEvent.Navigate -> onNavigate(event)
                 else -> Unit
             }
@@ -54,9 +62,9 @@ fun TodoListScreen(
                 )
             }
         }
-    ) {
+    ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
         ) {
             items(todos.value) { todo ->
                 TodoItem(
